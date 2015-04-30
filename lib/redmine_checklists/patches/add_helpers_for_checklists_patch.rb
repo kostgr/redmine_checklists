@@ -28,6 +28,8 @@ module RedmineChecklists
   end
 end
 
-[IssuesController].each do |controller|
+[IssuesController, KanbanIssuesController].each do |controller|
   RedmineChecklists::Patches::AddHelpersForChecklistPatch.apply(controller)
 end
+
+
