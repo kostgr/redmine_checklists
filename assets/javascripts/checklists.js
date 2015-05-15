@@ -1,11 +1,3 @@
-if(typeof(String.prototype.trim) === "undefined")
-{
-    String.prototype.trim = function() 
-    {
-        return String(this).replace(/^\s+|\s+$/g, '');
-    };
-}
-
 /*! jQuery klass v0.2a - Jean-Louis Grall - MIT license - http://code.google.com/p/jquery-klass-plugin */
 
 ( function( $, undefined ) {
@@ -110,14 +102,10 @@ Redmine.Checklist = $.klass({
       event.returnValue = false
   },
 
-  addChecklistFields: function(templateDiv) {
+  addChecklistFields: function() {
     var new_id = new Date().getTime();
     var regexp = new RegExp("new_checklist", "g");
-    if (templateDiv) {
-      appended = $(this.content.replace(regexp, new_id)).insertBefore(templateDiv)
-    } else {
-      appended = $(this.content.replace(regexp, new_id)).appendTo(this.root)
-    }
+    appended = $(this.content.replace(regexp, new_id)).appendTo(this.root)
     appended.find('.edit-box').focus()
   },
 
@@ -125,23 +113,9 @@ Redmine.Checklist = $.klass({
     return $(event.target).closest('.checklist-item')
   },
 
-  findSpanBefore: function(elem) {
-    return elem.prevAll('span.checklist-item.new')
-  },
-
-  transformItem: function(event, elem, valueToSet) {
-    var checklistItem;
-    if (event) {
-      checklistItem = this.findSpan(event)
-    } else {
-      checklistItem = this.findSpanBefore(elem)
-    }
-    var val;
-    if (valueToSet) {
-      val = valueToSet
-    } else {
-      val = checklistItem.find('input.edit-box').val()
-    }
+  transformItem: function(event) {
+    checklistItem = this.findSpan(event)
+    val = checklistItem.find('input.edit-box').val()
     checklistItem.find('.checklist-subject').text(val)
     checklistItem.find('.checklist-subject-hidden').val(val)
     checklistItem.removeClass('edit')
@@ -158,10 +132,7 @@ Redmine.Checklist = $.klass({
   addChecklistItem: function(event) {
     this.preventEvent(event)
     this.transformItem(event)
-    if ($('.template-wrapper').length)
-      this.addChecklistFields($('.template-wrapper'))
-    else
-      this.addChecklistFields()
+    this.addChecklistFields()
   },
 
   canSave: function(span) {
@@ -289,46 +260,6 @@ Redmine.Checklist = $.klass({
     }, this))
   },
 
-  hasAlreadyChecklistWithName: function(value) {
-    var ret = false;
-    $('.checklist-show.checklist-subject').each(function(i, elem) {
-      e = $(elem)
-      if (value == e.text().trim())
-      {
-        ret = true;
-      }
-    })
-    return ret;
-  },
-
-  assignTemplateSelectedEvent: function() {
-    this.root.on('change', '#checklist_template', $.proxy(function(){
-      value = $('#checklist_template').val()
-      selected = $('#checklist_template option[value='+value+']').data('template-items')
-      items = selected.split(/\n/)
-      for(i = 0; i<items.length; i++)
-      {
-        item = items[i]
-        if (!this.hasAlreadyChecklistWithName(item))
-        {
-          this.transformItem(null, $('#checklist_template'), item)
-          this.addChecklistFields($('#template-link').closest('span'))
-        }
-      }
-      $('#checklist_template').val('')
-      $('#template-link').show()
-      $('#checklist_template').hide()
-
-    }, this))
-  },
-
-  clickSelectTemplateLink: function() {
-    this.root.on('click', '#template-link', function(){
-      $('#template-link').hide()
-      $('#checklist_template').show()
-    })
-  },
-
   init: function(element) {
     this.root = element
     this.content = element.data('checklist-fields')
@@ -341,8 +272,6 @@ Redmine.Checklist = $.klass({
     this.onCheckboxChanged()
     this.onChangeCheckbox()
     this.enableUniquenessValidation()
-    this.assignTemplateSelectedEvent()
-    this.clickSelectTemplateLink()
   }
 
 })
@@ -350,3 +279,8 @@ Redmine.Checklist = $.klass({
 $.fn.checklist = function(element){
   new Redmine.Checklist(this);
 }
+
+$(function(){
+  $('span#checklist_form_items').checklist()
+  $('#checklist_items').checklist()
+})
