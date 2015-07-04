@@ -3,7 +3,7 @@
 # This file is a part of Redmine Checklists (redmine_checklists) plugin,
 # issue checklists management plugin for Redmine
 #
-# Copyright (C) 2011-2015 Kirill Bezrukov
+# Copyright (C) 2011-2014 Kirill Bezrukov
 # http://www.redminecrm.com/
 #
 # redmine_checklists is free software: you can redistribute it and/or modify
@@ -44,7 +44,7 @@ class ChecklistsControllerTest < ActionController::TestCase
            :journals,
            :journal_details,
            :queries
-  RedmineChecklists::TestCase.create_fixtures(Redmine::Plugin.find(:redmine_checklists).directory + '/test/fixtures/',
+  ActiveRecord::Fixtures.create_fixtures(Redmine::Plugin.find(:redmine_checklists).directory + '/test/fixtures/',
                                          [:checklists])
 
   def setup
@@ -91,14 +91,5 @@ class ChecklistsControllerTest < ActionController::TestCase
     assert_select 'ul#checklist_items', false, "Issue view for anonymous"
   end
 
-  def test_should_save_checklist_in_logs
-    Setting[:plugin_redmine_checklists] = { :save_log => 1, :issue_done_ratio => 0 }
-    @request.session[:user_id] = 1
-    post :done, :id => 1, :format => :js
-    assert_response :success
-    assert_equal(Issue.find(1), Journal.last.journalized)
-    assert_equal(1, Journal.last.details.where(:old_value => '[ ] First todo').count)
-    assert_equal(1, Journal.last.details.where(:value => '[x] First todo').count)
-  end
 
 end
