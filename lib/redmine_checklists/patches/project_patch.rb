@@ -17,17 +17,36 @@
 # You should have received a copy of the GNU General Public License
 # along with redmine_checklists.  If not, see <http://www.gnu.org/licenses/>.
 
+require_dependency 'project'
+
 module RedmineChecklists
   module Patches
 
-    module AddHelpersForChecklistPatch
-      def self.apply(controller)
-        controller.send(:helper, 'checklists')
+    module ProjectPatch
+      def self.included(base) # :nodoc:
+        base.send(:include, InstanceMethods)
+        base.class_eval do
+          unloadable # Send unloadable so it will not be unloaded in development
+          alias_method_chain :copy_issues, :checklist
+
+        end
       end
+
+      module InstanceMethods
+
+        def copy_issues_with_checklist(project)
+          copy_issues_without_checklist(project)
+          issues.each{ |issue| issue.copy_checklists(issue.copied_from)}
+        end
+
+      end
+
     end
+
   end
 end
 
-[IssuesController, KanbanIssuesController].each do |controller|
-  RedmineChecklists::Patches::AddHelpersForChecklistPatch.apply(controller)
+
+unless Project.included_modules.include?(RedmineChecklists::Patches::ProjectPatch)
+  Project.send(:include, RedmineChecklists::Patches::ProjectPatch)
 end
