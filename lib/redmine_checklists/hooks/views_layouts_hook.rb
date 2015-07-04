@@ -18,16 +18,12 @@
 # along with redmine_checklists.  If not, see <http://www.gnu.org/licenses/>.
 
 module RedmineChecklists
-  module Patches
-
-    module AddHelpersForChecklistPatch
-      def self.apply(controller)
-        controller.send(:helper, 'checklists')
+  module Hooks
+    class ViewsLayoutsHook < Redmine::Hook::ViewListener
+      def view_layouts_base_html_head(context={})
+        return javascript_include_tag(:checklists, :plugin => 'redmine_checklists') +
+          stylesheet_link_tag(:checklists, :plugin => 'redmine_checklists')
       end
     end
   end
-end
-
-[IssuesController].each do |controller|
-  RedmineChecklists::Patches::AddHelpersForChecklistPatch.apply(controller)
 end

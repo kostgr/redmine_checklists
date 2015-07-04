@@ -17,42 +17,27 @@
 # You should have received a copy of the GNU General Public License
 # along with redmine_checklists.  If not, see <http://www.gnu.org/licenses/>.
 
+require_dependency 'project'
+
 module RedmineChecklists
   module Patches
 
-    module IssuesControllerPatch
+    module ProjectPatch
       def self.included(base) # :nodoc:
         base.send(:include, InstanceMethods)
         base.class_eval do
           unloadable # Send unloadable so it will not be unloaded in development
-
-          alias_method_chain :build_new_issue_from_params, :checklist
+          alias_method_chain :copy_issues, :checklist
 
         end
-
-
       end
 
       module InstanceMethods
 
-        def build_new_issue_from_params_with_checklist
-          if params[:copy_from] && params[:id].blank? && params[:issue].blank?
-            params[:issue] = {:checklists_attributes => {}}
-            begin
-                @copy_from = Issue.visible.find(params[:copy_from])
-                @copy_from.checklists.each_with_index do |checklist_item, index|
-                  params[:issue][:checklists_attributes][index.to_s] = {:is_done => checklist_item.is_done,
-                                                                        :subject => checklist_item.subject,
-                                                                        :position => checklist_item.position}
-                end
-            rescue ActiveRecord::RecordNotFound
-              render_404
-              return
-            end
-          end
-          build_new_issue_from_params_without_checklist
+        def copy_issues_with_checklist(project)
+          copy_issues_without_checklist(project)
+          issues.each{ |issue| issue.copy_checklists(issue.copied_from)}
         end
-
 
       end
 
@@ -62,6 +47,6 @@ module RedmineChecklists
 end
 
 
-unless IssuesController.included_modules.include?(RedmineChecklists::Patches::IssuesControllerPatch)
-  IssuesController.send(:include, RedmineChecklists::Patches::IssuesControllerPatch)
+unless Project.included_modules.include?(RedmineChecklists::Patches::ProjectPatch)
+  Project.send(:include, RedmineChecklists::Patches::ProjectPatch)
 end

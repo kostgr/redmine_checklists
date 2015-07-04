@@ -1,7 +1,7 @@
 # This file is a part of Redmine Checklists (redmine_checklists) plugin,
 # issue checklists management plugin for Redmine
 #
-# Copyright (C) 2011-2014 Kirill Bezrukov
+# Copyright (C) 2011-2015 Kirill Bezrukov
 # http://www.redminecrm.com/
 #
 # redmine_checklists is free software: you can redistribute it and/or modify
@@ -20,8 +20,10 @@
 Rails.configuration.to_prepare do
   require 'redmine_checklists/hooks/controller_issue_hook'
   require 'redmine_checklists/hooks/views_issues_hook'
+  require 'redmine_checklists/hooks/views_layouts_hook'
 
   require 'redmine_checklists/patches/issue_patch'
+  require 'redmine_checklists/patches/project_patch'
   require 'redmine_checklists/patches/issues_controller_patch'
   require 'redmine_checklists/patches/add_helpers_for_checklists_patch'
   require 'redmine_checklists/patches/compatibility_patch'
